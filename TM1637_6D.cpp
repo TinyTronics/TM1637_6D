@@ -104,7 +104,7 @@ void TM1637_6D::display(int8_t DispData[], int8_t DispPointData[])
   
   for(i = 0;i < 6;i++)
   {
-    if(DispData[i] > 11 || DispData[i] < 0) DispData = 11;
+    if(DispData[i] > 11 || DispData[i] < 0) DispData[i] = 11;
   }
   
   SegData[0] = DispData[3];
