@@ -62,12 +62,14 @@ class TM1637_6D
     void stop(void); //send stop bits
     void display(int8_t DispData[],int8_t DispPointData[]);
     void display(uint8_t BitAddr,int8_t DispData,int8_t DispPointData);
+    void displayByte(int8_t SegData[]);
+    void displayByte(uint8_t BitAddr,int8_t SegData);
 	void displayError();
 	void displayInteger(int32_t intdisplay, bool leading_zeros);
 	void displayFloat(float floatdisplay);
     void clearDisplay(void);
     void set(uint8_t = BRIGHT_TYPICAL,uint8_t = 0x40,uint8_t = 0xc0);//To take effect the next time it displays.
-    void coding(int8_t DispData[],int8_t DispPointData[]);
+    void coding(int8_t DispData[],int8_t DispPointData[], int8_t SegDataOut[]);
     int8_t coding(int8_t DispData,int8_t DispPointData);
     void bitDelay(void);
   private:
