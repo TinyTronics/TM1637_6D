@@ -38,6 +38,10 @@ static int8_t TubeTab[] = {0x3f,0x06,0x5b,0x4f,
                            0x7f,0x6f,0x00,0x40};//0~9, 10=blank digit, 11=dash/minus character
 
 static int8_t SegmentToAddressMapping[] = {3,4,5,0,1,2}; // Right to left, segments are 3,4,5,0,1,2						   
+
+const int8_t zeroListDisp[6] = {10,10,10,10,10,10}; // fill array with value for blank digit
+const int8_t zeroListDispPoint[6] = {0x00,0x00,0x00,0x00,0x00,0x00}; // don't show any points
+  
 TM1637_6D::TM1637_6D(uint8_t Clk, uint8_t Data)
 {
   Clkpin = Clk;
@@ -162,9 +166,20 @@ void TM1637_6D::displayError()
 
 void TM1637_6D::displayInteger(int32_t intdisplay, bool leading_zeros)
 {
-  int8_t tempListDisp[6] = {10,10,10,10,10,10}; // fill array with value for blank digit
-  int8_t tempListDispPoint[6] = {0x00,0x00,0x00,0x00,0x00,0x00}; // don't show any points
+  int8_t tempListDisp[6];
+  int8_t tempListDispPoint[6];
+
+  buildIntegerDispArray(intdisplay, leading_zeros, tempListDisp, tempListDispPoint);
+  display(tempListDisp, tempListDispPoint);
+}
+
+void TM1637_6D::buildIntegerDispArray(int32_t intdisplay, bool leading_zeros, int8_t outListDispData[6], int8_t outListDispPointData[6])
+{
   int8_t i = 0;
+
+  memcpy(outListDispData, zeroListDisp, sizeof(zeroListDisp));
+  memcpy(outListDispPointData, zeroListDispPoint, sizeof(zeroListDispPoint));
+  
   // String for converting millis value to seperate characters in the string
   String intstring;
   
@@ -186,9 +201,9 @@ void TM1637_6D::displayInteger(int32_t intdisplay, bool leading_zeros)
       {
 	    // number "0" in ASCII is 48 in decimal. If we substract the character value
         // with 48, we will get the actual number it is representing as a character
-	    tempListDisp[i] = intstring[intstring.length()-i-1] - 48;
+	    outListDispData[i] = intstring[intstring.length()-i-1] - 48;
       }
-      tempListDisp[5] = 11;// adding the dash/minus later for this negative integer
+      outListDispData[5] = 11;// adding the dash/minus later for this negative integer
 	}
 	else
 	{
@@ -198,18 +213,29 @@ void TM1637_6D::displayInteger(int32_t intdisplay, bool leading_zeros)
       {
 	    // number "0" in ASCII is 48 in decimal. If we substract the character value
         // with 48, we will get the actual number it is representing as a character
-	    tempListDisp[i] = intstring[intstring.length()-i-1] - 48;
+	    outListDispData[i] = intstring[intstring.length()-i-1] - 48;
       }
 	}
-	display(tempListDisp, tempListDispPoint);
   }
 }
 
+
 void TM1637_6D::displayFloat(float floatdisplay)
 {
-  int8_t tempListDisp[6] = {10,10,10,10,10,10}; // fill array with value for blank digit
-  int8_t tempListDispPoint[6] = {0x00,0x00,0x00,0x00,0x00,0x00}; // don't show any points
+  int8_t tempListDisp[6];
+  int8_t tempListDispPoint[6];
+  
+  buildFloatDispArray(floatdisplay, tempListDisp, tempListDispPoint);
+  display(tempListDisp, tempListDispPoint);
+}
+
+void TM1637_6D::buildFloatDispArray(float floatdisplay, int8_t outListDispData[6], int8_t outListDispPointData[6])
+{
   int8_t i = 0;
+   
+  memcpy(outListDispData, zeroListDisp, sizeof(zeroListDisp));
+  memcpy(outListDispPointData, zeroListDispPoint, sizeof(zeroListDispPoint));
+
   // String for converting millis value to seperate characters in the string
   String floatstring;  
   
@@ -239,15 +265,15 @@ void TM1637_6D::displayFloat(float floatdisplay)
       {
         // number "0" in ASCII is 48 in decimal. If we substract the character value
         // with 48, we will get the actual number it is representing as a character
-	    tempListDisp[i] = floatstring[floatstring.length()-i-1-decimal_point_add] - 48;
+	    outListDispData[i] = floatstring[floatstring.length()-i-1-decimal_point_add] - 48;
         if(floatstring[floatstring.length()-i-2] == '.')
         {
-          tempListDispPoint[i+1] = 0x80; // set decimal point
+          outListDispPointData[i+1] = 0x80; // set decimal point
 		  decimal_point_add = 1;
         }
         
       }
-      tempListDisp[5] = 11;// adding the dash/minus later for this negative integer
+      outListDispData[5] = 11;// adding the dash/minus later for this negative integer
 	}
 	else
 	{
@@ -259,22 +285,21 @@ void TM1637_6D::displayFloat(float floatdisplay)
         
         // number "0" in ASCII is 48 in decimal. If we substract the character value
         // with 48, we will get the actual number it is representing as a character
-	    tempListDisp[i] = floatstring[floatstring.length()-i-1-decimal_point_add] - 48;
+	    outListDispData[i] = floatstring[floatstring.length()-i-1-decimal_point_add] - 48;
         if(floatstring[floatstring.length()-i-2] == '.')
         {
-          tempListDispPoint[i+1] = 0x80; // set decimal point
+          outListDispPointData[i+1] = 0x80; // set decimal point
 		  decimal_point_add = 1;
         }
       }
 	}
-	if(decimal_point_add == 0) tempListDispPoint[0] = 0x80;
-	display(tempListDisp, tempListDispPoint);
+	if(decimal_point_add == 0) outListDispPointData[0] = 0x80;
   }
 }
 
 void TM1637_6D::clearDisplay(void)
 {
-  int8_t tempListDisp[6] = {10,10,10,10,10,10}; // fill array with dashes character(11th)
+  int8_t tempListDisp[6] = {10,10,10,10,10,10}; // fill array with blank characters(10th)
   int8_t tempListDispPoint[6] = {0x00,0x00,0x00,0x00,0x00,0x00}; // don't show any poinst
   display(tempListDisp, tempListDispPoint);
 }
