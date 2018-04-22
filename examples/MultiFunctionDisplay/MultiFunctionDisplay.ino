@@ -25,8 +25,8 @@
  
 #include "TM1637_6D.h"
 
-#define CLK 3 //pins definitions for TM1637 and can be changed to other ports
-#define DIO 2
+#define CLK 6 //pins definitions for TM1637 and can be changed to other ports
+#define DIO 5
 
 TM1637_6D tm1637_6D(CLK,DIO);
 
@@ -60,12 +60,12 @@ void loop()
     delay(500);
   }
  
-  tm1637_6D.displayByte(ListDispByte);
+  tm1637_6D.displayCodedByte(ListDispByte);
   delay(500);
 
   for(int i=0;i<6;i++)
   {
-    tm1637_6D.displayByte(i,0b11001001);
+    tm1637_6D.displayCodedByte(i,0b11001001);
     delay(500);
   }
   tm1637_6D.clearDisplay();

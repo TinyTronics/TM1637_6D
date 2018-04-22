@@ -107,10 +107,10 @@ void TM1637_6D::display(int8_t DispData[], int8_t DispPointData[])
 {
   int8_t SegDataMapped[6];
   coding(DispData, DispPointData, SegDataMapped);
-  displayByte(SegDataMapped);
+  displayCodedByte(SegDataMapped);
 }
 
-void TM1637_6D::displayByte(int8_t SegData[])
+void TM1637_6D::displayCodedByte(int8_t SegData[])
 {
   int8_t SegDataMapped[6];
 
@@ -139,10 +139,10 @@ void TM1637_6D::display(uint8_t BitAddr,int8_t DispData,int8_t DispPointData)
 {
   int8_t SegData;
   SegData = coding(DispData, DispPointData);
-  displayByte(BitAddr, SegData);
+  displayCodedByte(BitAddr, SegData);
 }
 
-void TM1637_6D::displayByte(uint8_t BitAddr,int8_t SegData)
+void TM1637_6D::displayCodedByte(uint8_t BitAddr,int8_t SegData)
 {
   start();          //start signal sent to TM1637 from MCU
   writeByte(ADDR_FIXED);//
@@ -168,9 +168,20 @@ void TM1637_6D::displayInteger(int32_t intdisplay, bool leading_zeros)
 {
   int8_t tempListDisp[6];
   int8_t tempListDispPoint[6];
+  int8_t SegDataMapped[6];
+  
+  buildIntegerCodedByteArray(intdisplay, leading_zeros, SegDataMapped);
+  displayCodedByte(SegDataMapped);
+}
 
+void TM1637_6D::buildIntegerCodedByteArray(int32_t intdisplay, bool leading_zeros, int8_t SegDataOut[6])
+{
+  int8_t tempListDisp[6];
+  int8_t tempListDispPoint[6];
+  int8_t SegDataMapped[6];	  
+  
   buildIntegerDispArray(intdisplay, leading_zeros, tempListDisp, tempListDispPoint);
-  display(tempListDisp, tempListDispPoint);
+  coding(tempListDisp, tempListDispPoint, SegDataOut);
 }
 
 void TM1637_6D::buildIntegerDispArray(int32_t intdisplay, bool leading_zeros, int8_t outListDispData[6], int8_t outListDispPointData[6])
@@ -219,15 +230,22 @@ void TM1637_6D::buildIntegerDispArray(int32_t intdisplay, bool leading_zeros, in
   }
 }
 
-
 void TM1637_6D::displayFloat(float floatdisplay)
+{
+  int8_t SegDataMapped[6];
+  buildFloatCodedByteArray(floatdisplay, SegDataMapped);
+  displayCodedByte(SegDataMapped);
+}
+
+void TM1637_6D::buildFloatCodedByteArray(float floatdisplay, int8_t SegDataOut[6])
 {
   int8_t tempListDisp[6];
   int8_t tempListDispPoint[6];
-  
+	  
   buildFloatDispArray(floatdisplay, tempListDisp, tempListDispPoint);
-  display(tempListDisp, tempListDispPoint);
+  coding(tempListDisp, tempListDispPoint, SegDataOut);
 }
+
 
 void TM1637_6D::buildFloatDispArray(float floatdisplay, int8_t outListDispData[6], int8_t outListDispPointData[6])
 {
@@ -279,7 +297,7 @@ void TM1637_6D::buildFloatDispArray(float floatdisplay, int8_t outListDispData[6
 	{
       floatstring =  String(floatdisplay, 6-numberofdigits); // convertering integer to a string
       decimal_point_add = 0;
-	  Serial.println(floatstring.length());
+
       for(i = 0; i < (floatstring.length() - decimal_point_add); i++) 
       {
         
